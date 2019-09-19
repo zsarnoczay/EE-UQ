@@ -11,12 +11,12 @@
 #include <AgaveCurl.h>
 #include <InputWidgetEE_UQ.h>
 
-
 #include <QApplication>
 #include <QFile>
 #include <QTime>
 #include <QTextStream>
 #include <GoogleAnalytics.h>
+#include <QOpenGLWidget>
 
  // customMessgaeOutput code from web:
  // https://stackoverflow.com/questions/4954140/how-to-redirect-qdebug-qwarning-qcritical-etc-output
@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
     //Setting Core Application Name, Organization, Version and Google Analytics Tracking Id
     QCoreApplication::setApplicationName("EE-UQ");
     QCoreApplication::setOrganizationName("SimCenter");
-    QCoreApplication::setApplicationVersion("1.1.0");
-    GoogleAnalytics::SetTrackingId("UA-126303135-1");
+    QCoreApplication::setApplicationVersion("1.2.0");
+    //GoogleAnalytics::SetTrackingId("UA-126303135-1");
     GoogleAnalytics::StartSession();
     GoogleAnalytics::ReportStart();
 
@@ -78,6 +78,13 @@ int main(int argc, char *argv[])
 
   // window scaling for mac
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
+
+  QSurfaceFormat glFormat;
+  glFormat.setVersion(3, 3);
+  glFormat.setProfile(QSurfaceFormat::CoreProfile);
+  QSurfaceFormat::setDefaultFormat(glFormat);
+
 
   QApplication a(argc, argv);
 
@@ -121,15 +128,18 @@ int main(int argc, char *argv[])
       This will ensure researchers are not limited to using the default applications we provide and will be enthused to provide\
       their own applications for others to use.\
       <p>\
-      This is Version 1.1.0 of the tool and as such is limited in scope. Researchers are encouraged to comment on what additional \
+      This is Version 1.2.0 of the tool and as such is limited in scope. Researchers are encouraged to comment on what additional \
       features and applications they would like to see in this application. If you want it, chances are many of your colleagues \
       also would benefit from it.\
       <p>";
 
      w.setAbout(textAboutEE_UQ);
 
-     QString version("Version 1.1.0");
+     QString version("Version 1.2.0");
      w.setVersion(version);
+
+     QString citeText("Frank McKenna, Wael Elhaddad, Adam Zsarnoczay, Michael Gardner, & Charles Wang. (2019, June 29). NHERI-SimCenter/EE-UQ: Release v1.2.0 (Version v1.2.0). Zenodo. http://doi.org/10.5281/zenodo.3262287");
+  w.setCite(citeText);
 
      QString manualURL("https://www.designsafe-ci.org/data/browser/public/designsafe.storage.community//SimCenter/Software/EE_UQ");
      w.setDocumentationURL(manualURL);
@@ -150,6 +160,7 @@ int main(int argc, char *argv[])
   // show the main window & start the event loop
   //
 
+
   w.show();
 
 
@@ -162,7 +173,6 @@ int main(int argc, char *argv[])
     file.close();
     fileEEUQ.close();
   }
-
 
 
 /*
