@@ -67,6 +67,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <UserDefinedApplication.h>
 #include "StochasticMotionInputWidget.h"
 #include "RockOutcrop.h"
+#include "PeerNga/PeerNgaRecordsWidget.h"
 
 EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
     : SimCenterAppWidget(parent), theCurrentEvent(0), theRandomVariablesContainer(theRandomVariableIW)
@@ -84,6 +85,7 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     eventSelection->setObjectName("LoadingTypeCombox");
     //    eventSelection->addItem(tr("Existing"));
     eventSelection->addItem(tr("Stochastic Ground Motion"));
+    eventSelection->addItem(tr("PEER NGA Records"));
     eventSelection->addItem(tr("Multiple PEER"));
     eventSelection->addItem(tr("Hazard Based Event"));
     eventSelection->addItem(tr("Site Response"));
@@ -113,6 +115,10 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     theStochasticMotionWidget = new StochasticMotionInputWidget(theRandomVariablesContainer);
     theStackedWidget->addWidget(theStochasticMotionWidget);
 
+    //Adding PEER NGA Records ground motion widget
+    peerNgaRecords = new PeerNgaRecordsWidget(theRandomVariablesContainer);
+    theStackedWidget->addWidget(peerNgaRecords);
+
     theExistingPeerEvents = new ExistingPEER_Events(theRandomVariablesContainer);
     theStackedWidget->addWidget(theExistingPeerEvents);
 
@@ -130,6 +136,8 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
 
     theUserDefinedApplication = new UserDefinedApplication(theRandomVariablesContainer);
     theStackedWidget->addWidget(theUserDefinedApplication);
+
+
 
     layout->addWidget(theStackedWidget);
     this->setLayout(layout);
@@ -193,22 +201,22 @@ void EarthquakeEventSelection::eventSelectionChanged(const QString &arg1)
     //
 
     if (arg1 == "Multiple Existing") {
-        theStackedWidget->setCurrentIndex(4);
+        theStackedWidget->setCurrentIndex(5);
         theCurrentEvent = theExistingEvents;
     }
 
     else if(arg1 == "Multiple PEER") {
-        theStackedWidget->setCurrentIndex(1);
+        theStackedWidget->setCurrentIndex(2);
         theCurrentEvent = theExistingPeerEvents;
     }
 
     else if(arg1 == "Hazard Based Event") {
-        theStackedWidget->setCurrentIndex(2);
+        theStackedWidget->setCurrentIndex(3);
         theCurrentEvent = theSHA_MotionWidget;
     }
 
     else if (arg1 == "Site Response") {
-      theStackedWidget->setCurrentIndex(3);
+      theStackedWidget->setCurrentIndex(4);
       theCurrentEvent = theRockOutcrop;
     }
 
@@ -218,8 +226,13 @@ void EarthquakeEventSelection::eventSelectionChanged(const QString &arg1)
     }
 
     else if(arg1 == "User Application") {
-        theStackedWidget->setCurrentIndex(5);
+        theStackedWidget->setCurrentIndex(6);
         theCurrentEvent = theUserDefinedApplication;
+    }
+
+    else if(arg1 == "PEER NGA Records") {
+        theStackedWidget->setCurrentIndex(1);
+        theCurrentEvent = peerNgaRecords;
     }
     else {
         qDebug() << "ERROR .. EarthquakeEventSelection selection .. type unknown: " << arg1;
@@ -244,6 +257,7 @@ EarthquakeEventSelection::inputAppDataFromJSON(QJsonObject &jsonObject)
 
     QJsonObject theEvent;
     QString type;
+    QString subtype;
 
     // from Events get the single event
 
@@ -257,6 +271,8 @@ EarthquakeEventSelection::inputAppDataFromJSON(QJsonObject &jsonObject)
         if (theEvent.contains("Application")) {
             QJsonValue theName = theEvent["Application"];
             type = theName.toString();
+            if(theEvent.contains("subtype"))
+                subtype = theEvent["subtype"].toString();
         } else
             return false;
     } else
@@ -267,15 +283,18 @@ EarthquakeEventSelection::inputAppDataFromJSON(QJsonObject &jsonObject)
     int index = 0;
     if ((type == QString("Existing Events")) ||
             (type == QString("ExistingSimCenterEvents"))) {
-        index = 4;
+        index = 5;
     } else if ((type == QString("Existing PEER Events")) ||
                (type == QString("ExistingPEER_Events"))) {
-        index = 1;
+        if(!subtype.isEmpty() && subtype == "PEER NGA Records")
+            index = 1;
+        else
+            index = 2;
     } else if (type == QString("Hazard Based Event")) {
-        index = 2; 
+        index = 3;
     } else if (type == QString("Site Response") ||
                type == QString("SiteResponse")) {
-        index = 3;
+        index = 4;
     } else if (type == QString("Stochastic Ground Motion Model") ||
 	       type == QString("Stochastic Ground Motion") ||
 	       type == QString("StochasticGroundMotion") ||
@@ -283,7 +302,7 @@ EarthquakeEventSelection::inputAppDataFromJSON(QJsonObject &jsonObject)
         index = 0;
     } else if ((type == QString("User Application")) ||
                (type == QString("UserDefinedApplication"))) {
-        index = 5;
+        index = 6;
     } else {
         return false;
     }
