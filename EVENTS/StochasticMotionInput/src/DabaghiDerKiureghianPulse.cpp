@@ -112,6 +112,8 @@ DabaghiDerKiureghianPulse::DabaghiDerKiureghianPulse(
   directivity_params_ = new QLabel(
       "Geometric directivity parameters (Dabaghi & Der Kiureghian, 2018)");
   QPixmap directivity_image(":resources/directivityParameters.png");
+  //  QSize sizePixmap = directivity_image.size();
+  //  QPixmap scaledPixmap = directivity_image.scaled(QSize(sizePixmap.height()*.75, sizePixmap.width()*.75));
   directivity_params_->setPixmap(directivity_image);
   directivity_params_->show();
 

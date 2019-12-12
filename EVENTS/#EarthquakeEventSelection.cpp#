@@ -61,13 +61,12 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <InputWidgetExistingEvent.h>
 #include <ExistingSimCenterEvents.h>
-#include <UniformMotionInput.h>
-#include <ExistingPEER_Events.h>
+#include <ExistingPEER_Records.h>
 #include "SHAMotionWidget.h"
 #include <UserDefinedApplication.h>
-#include "StochasticMotionInputWidget.h"
+#include "StochasticMotionInput.h"
 #include "RockOutcrop.h"
-#include "PeerNga/PeerNgaRecordsWidget.h"
+#include "PeerNga/PEER_NGA_Records.h"
 
 EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *theRandomVariableIW, QWidget *parent)
     : SimCenterAppWidget(parent), theCurrentEvent(0), theRandomVariablesContainer(theRandomVariableIW)
@@ -112,14 +111,14 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     //theStackedWidget->addWidget(theExistingEventsWidget);
 
     // Adding stochastic ground motion model widget
-    theStochasticMotionWidget = new StochasticMotionInputWidget(theRandomVariablesContainer);
+    theStochasticMotionWidget = new StochasticMotionInput(theRandomVariablesContainer);
     theStackedWidget->addWidget(theStochasticMotionWidget);
 
     //Adding PEER NGA Records ground motion widget
-    peerNgaRecords = new PeerNgaRecordsWidget(theRandomVariablesContainer);
+    peerNgaRecords = new PEER_NGA_Records(theRandomVariablesContainer);
     theStackedWidget->addWidget(peerNgaRecords);
 
-    theExistingPeerEvents = new ExistingPEER_Events(theRandomVariablesContainer);
+    theExistingPeerEvents = new ExistingPEER_Records(theRandomVariablesContainer);
     theStackedWidget->addWidget(theExistingPeerEvents);
 
     //Adding SHA based ground motion widget
@@ -127,7 +126,7 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     theStackedWidget->addWidget(theSHA_MotionWidget);
 
     // Adding SRT widget
-    theRockOutcrop = new RockOutcrop(theRandomVariablesContainer);
+StochasticMotionInputWidget    theRockOutcrop = new RockOutcrop(theRandomVariablesContainer);
     theStackedWidget->addWidget(theRockOutcrop);
 
     // Adding stochastic ground motion model widget
@@ -284,8 +283,9 @@ EarthquakeEventSelection::inputAppDataFromJSON(QJsonObject &jsonObject)
     if ((type == QString("Existing Events")) ||
             (type == QString("ExistingSimCenterEvents"))) {
         index = 5;
-    } else if ((type == QString("Existing PEER Events")) ||
-               (type == QString("ExistingPEER_Events"))) {
+    } else if ((type == QString("Existing PEER Records")) ||
+               (type == QString("ExistingPEER_Events"))  ||
+               (type == QString("ExistingPEER_Records"))) {
         if(!subtype.isEmpty() && subtype == "PEER NGA Records")
             index = 1;
         else

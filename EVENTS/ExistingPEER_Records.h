@@ -1,5 +1,5 @@
-#ifndef EXISTING_PEER_EVENTS_H
-#define EXISTING_PEER_EVENTS_H
+#ifndef EXISTING_PEER_RECORDS_H
+#define EXISTING_PEER_RECORDS_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -106,13 +106,13 @@ private:
 };
 
 
-class ExistingPEER_Events : public SimCenterAppWidget
+class ExistingPEER_Records : public SimCenterAppWidget
 {
     Q_OBJECT
 public:
-    explicit ExistingPEER_Events(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
+    explicit ExistingPEER_Records(RandomVariablesContainer *theRandomVariableIW, QWidget *parent = 0);
 
-    ~ExistingPEER_Events();
+    ~ExistingPEER_Records();
 
     bool inputFromJSON(QJsonObject &rvObject);
     bool outputToJSON(QJsonObject &rvObject);
@@ -136,4 +136,4 @@ private:
     RandomVariablesContainer *theRandVariableIW;
 };
 
-#endif // EXISTING_PEER_EVENTS_H
+#endif // EXISTING_PEER_RECORDS_H

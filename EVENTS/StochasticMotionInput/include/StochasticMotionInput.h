@@ -1,5 +1,5 @@
-#ifndef _STOCHASTIC_MOTION_INPUT_WIDGET_H
-#define _STOCHASTIC_MOTION_INPUT_WIDGET_H
+#ifndef _STOCHASTIC_MOTION_INPUT_H
+#define _STOCHASTIC_MOTION_INPUT_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -58,7 +58,7 @@ class RandomVariableInputWidget;
  * Widget for inputting parameters for stochastic earthquake time history
  * generation
  */
-class StochasticMotionInputWidget : public SimCenterAppWidget {
+class StochasticMotionInput : public SimCenterAppWidget {
   Q_OBJECT
  public:
   /**
@@ -66,13 +66,13 @@ class StochasticMotionInputWidget : public SimCenterAppWidget {
    * @param[in, out] random_variables Widget to store random variables to
    * @param[in, out] parent Pointer to parent widget. Defaults to nullptr.
    */
-  explicit StochasticMotionInputWidget(RandomVariablesContainer* random_variables,
+  explicit StochasticMotionInput(RandomVariablesContainer* random_variables,
 				       QWidget* parent = nullptr);
 
   /**
    * @destructor Virtual desctructor for stochastic input widget
    */
-  virtual ~StochasticMotionInputWidget();
+  virtual ~StochasticMotionInput();
 
   /**
    * Instantiate stochastice motion input widger from input JSON object
@@ -127,4 +127,4 @@ class StochasticMotionInputWidget : public SimCenterAppWidget {
 					       selected model parameters */
 };
 
-#endif  // _STOCHASTIC_MOTION_INPUT_WIDGET_H
+#endif  // _STOCHASTIC_MOTION_INPUT_H

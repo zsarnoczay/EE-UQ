@@ -1,4 +1,4 @@
-#include "PeerNgaRecordsWidget.h"
+#include "PEER_NGA_Records.h"
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLabel>
@@ -17,14 +17,14 @@
 #include <QMainWindow>
 #include <QThread>
 
-PeerNgaRecordsWidget::PeerNgaRecordsWidget(QWidget *parent) : SimCenterAppWidget(parent), groundMotionsFolder(QDir::tempPath())
+PEER_NGA_Records::PEER_NGA_Records(QWidget *parent) : SimCenterAppWidget(parent), groundMotionsFolder(QDir::tempPath())
 {
     setupUI();
 
     setupConnections();
 }
 
-void PeerNgaRecordsWidget::setupUI()
+void PEER_NGA_Records::setupUI()
 {
     auto layout = new QGridLayout(this);
 
@@ -155,7 +155,7 @@ void PeerNgaRecordsWidget::setupUI()
 
 }
 
-void PeerNgaRecordsWidget::setupConnections()
+void PEER_NGA_Records::setupConnections()
 {
     connect(selectRecordsButton, &QPushButton::clicked, this, [this]()
     {
@@ -197,7 +197,7 @@ void PeerNgaRecordsWidget::setupConnections()
         vs30Max->setEnabled(checked);
     });
 
-    connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, &PeerNgaRecordsWidget::updateStatus);
+    connect(&peerClient, &PeerNgaWest2Client::statusUpdated, this, &PEER_NGA_Records::updateStatus);
 
     connect(&peerClient, &PeerNgaWest2Client::selectionStarted, this, [this]()
     {
@@ -230,7 +230,7 @@ void PeerNgaRecordsWidget::setupConnections()
     });
 }
 
-void PeerNgaRecordsWidget::processPeerRecords(QDir resultFolder)
+void PEER_NGA_Records::processPeerRecords(QDir resultFolder)
 {
     if(!resultFolder.exists())
         return;
@@ -243,7 +243,7 @@ void PeerNgaRecordsWidget::processPeerRecords(QDir resultFolder)
     plotSpectra();
 }
 
-void PeerNgaRecordsWidget::setRecordsTable(QList<PeerScaledRecord> records)
+void PEER_NGA_Records::setRecordsTable(QList<PeerScaledRecord> records)
 {
     recordsTable->clear();
     int row = 0;
@@ -271,7 +271,7 @@ void PeerNgaRecordsWidget::setRecordsTable(QList<PeerScaledRecord> records)
 
 }
 
-void PeerNgaRecordsWidget::clearSpectra()
+void PEER_NGA_Records::clearSpectra()
 {
     periods.clear();
     meanSpectrum.clear();
@@ -281,7 +281,7 @@ void PeerNgaRecordsWidget::clearSpectra()
     scaledSelectedSpectra.clear();
 }
 
-void PeerNgaRecordsWidget::plotSpectra()
+void PEER_NGA_Records::plotSpectra()
 {
     //Spectra can be plotted here using the data in
     //periods, targetSpectrum, meanSpectrum, meanPlusSigmaSpectrum, meanMinusSigmaSpectrum, scaledSelectedSpectra
@@ -298,7 +298,7 @@ void PeerNgaRecordsWidget::plotSpectra()
     recordSelectionPlot.setMinimumSize(size);
 }
 
-void PeerNgaRecordsWidget::updateStatus(QString status)
+void PEER_NGA_Records::updateStatus(QString status)
 {
     if(this->parent())
     {
@@ -311,7 +311,7 @@ void PeerNgaRecordsWidget::updateStatus(QString status)
     }
 }
 
-void PeerNgaRecordsWidget::selectRecords()
+void PEER_NGA_Records::selectRecords()
 {
     QVariant magnitudeRange;
     if(magnitudeCheckBox->checkState() == Qt::Checked)
@@ -331,14 +331,14 @@ void PeerNgaRecordsWidget::selectRecords()
                              nRecordsEditBox->text().toInt(), magnitudeRange, distanceRange, vs30Range);
 }
 
-void PeerNgaRecordsWidget::addTableItem(int row, int column, QString value)
+void PEER_NGA_Records::addTableItem(int row, int column, QString value)
 {
     auto item = new QTableWidgetItem(value);
     item->setFlags(item->flags() ^ Qt::ItemIsEditable);
     recordsTable->setItem(row, column, item);
 }
 
-QList<PeerScaledRecord> PeerNgaRecordsWidget::parseSearchResults(QString searchResultsFilePath)
+QList<PeerScaledRecord> PEER_NGA_Records::parseSearchResults(QString searchResultsFilePath)
 {
     QList<PeerScaledRecord> records;
     records.reserve(nRecordsEditBox->text().toInt());
@@ -413,7 +413,7 @@ QList<PeerScaledRecord> PeerNgaRecordsWidget::parseSearchResults(QString searchR
     return records;
 }
 
-bool PeerNgaRecordsWidget::outputToJSON(QJsonObject &jsonObject)
+bool PEER_NGA_Records::outputToJSON(QJsonObject &jsonObject)
 {
     jsonObject["EventClassification"]="Earthquake";
     jsonObject["type"] = "ExistingPEER_Events";
@@ -492,7 +492,7 @@ bool PeerNgaRecordsWidget::outputToJSON(QJsonObject &jsonObject)
     return true;
 }
 
-bool PeerNgaRecordsWidget::inputFromJSON(QJsonObject &jsonObject)
+bool PEER_NGA_Records::inputFromJSON(QJsonObject &jsonObject)
 {
     spectrumTypeComboBox->setCurrentText(jsonObject["TargetSpectrum"].toString());
     sdsEditBox->setText(jsonObject["Sds"].toString());
@@ -527,7 +527,7 @@ bool PeerNgaRecordsWidget::inputFromJSON(QJsonObject &jsonObject)
     return true;
 }
 
-bool PeerNgaRecordsWidget::outputAppDataToJSON(QJsonObject &jsonObject)
+bool PEER_NGA_Records::outputAppDataToJSON(QJsonObject &jsonObject)
 {
     jsonObject["EventClassification"]="Earthquake";
     jsonObject["Application"] = "ExistingPEER_Events";
@@ -537,13 +537,13 @@ bool PeerNgaRecordsWidget::outputAppDataToJSON(QJsonObject &jsonObject)
     return true;
 }
 
-bool PeerNgaRecordsWidget::inputAppDataFromJSON(QJsonObject &jsonObject)
+bool PEER_NGA_Records::inputAppDataFromJSON(QJsonObject &jsonObject)
 {
 
     return true;
 }
 
-bool PeerNgaRecordsWidget::copyFiles(QString &destDir)
+bool PEER_NGA_Records::copyFiles(QString &destDir)
 {
     QDir recordsFolder(groundMotionsFolder.path());
     QDir destinationFolder(destDir);

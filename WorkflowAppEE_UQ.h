@@ -1,5 +1,5 @@
-#ifndef INPUT_WIDGET_EE_UQ_H
-#define INPUT_WIDGET_EE_UQ_H
+#ifndef WORKFLOW_APP_EE_UQ_H
+#define WORKFLOW_APP_EE_UQ_H
 
 /* *****************************************************************************
 Copyright (c) 2016-2017, The Regents of the University of California (Regents).
@@ -53,7 +53,7 @@ class InputWidgetBIM;
 class InputWidgetUQ;
 
 class SIM_Selection;
-class InputWidgetSampling;
+class UQ_EngineSelection;
 
 class InputWidgetOpenSeesAnalysis;
 class UQOptions;
@@ -61,7 +61,7 @@ class ResultsWidget;
 class GeneralInformationWidget;
 class EarthquakeEventSelection;
 class QStackedWidget;
-class DakotaResults;
+class UQ_Results;
 
 class RunLocalWidget;
 class RunWidget;
@@ -70,14 +70,14 @@ class RemoteService;
 class RemoteJobManager;
 class QNetworkAccessManager;
 class QNetworkReply;
-class EDP_Selection;
+class EDP_EarthquakeSelection;
 
-class InputWidgetEE_UQ : public WorkflowAppWidget
+class WorkflowAppEE_UQ : public WorkflowAppWidget
 {
     Q_OBJECT
 public:
-    explicit InputWidgetEE_UQ(RemoteService *theService, QWidget *parent = 0);
-    ~InputWidgetEE_UQ();
+    explicit WorkflowAppEE_UQ(RemoteService *theService, QWidget *parent = 0);
+    ~WorkflowAppEE_UQ();
 
     bool outputToJSON(QJsonObject &rvObject);
     bool inputFromJSON(QJsonObject &rvObject);
@@ -116,11 +116,11 @@ private:
 
     // the AppWidgets .. not all displayed in main UI
     SIM_Selection *theSIM;
-    InputWidgetSampling *theUQ_Method;
-    EarthquakeEventSelection *theEvent;
+    UQ_EngineSelection *theUQ_Selection;
+    EarthquakeEventSelection *theEventSelection;
     InputWidgetOpenSeesAnalysis *theAnalysis;
-    EDP_Selection *theEDP;
-    DakotaResults *theResults;
+    EDP_EarthquakeSelection *theEDP_Selection;
+    UQ_Results *theResults;
 
     // other widgets appearing in UI
     InputWidgetBIM *theBIM; // contains GI and SIM
@@ -140,4 +140,4 @@ private:
 
 };
 
-#endif // INPUT_WIDGET_EE_UQ_H
+#endif // WORKFLOW_APP_EE_UQ_H

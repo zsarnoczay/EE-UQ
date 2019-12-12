@@ -1,5 +1,5 @@
-#ifndef PEERNGARECORDSWIDGET_H
-#define PEERNGARECORDSWIDGET_H
+#ifndef PEER_NGA_RECORDS_H
+#define PEER_NGA_RECORDS_H
 
 #include <QWidget>
 #include <SimCenterAppWidget.h>
@@ -32,13 +32,13 @@ struct PeerScaledRecord
 
 };
 
-class PeerNgaRecordsWidget : public SimCenterAppWidget
+class PEER_NGA_Records : public SimCenterAppWidget
 {
     Q_OBJECT
 
 
 public:
-    explicit PeerNgaRecordsWidget(QWidget *parent = nullptr);
+    explicit PEER_NGA_Records(QWidget *parent = nullptr);
 
     bool outputToJSON(QJsonObject &jsonObject) override;
     bool inputFromJSON(QJsonObject &jsonObject) override;
@@ -105,4 +105,4 @@ private:
 
 };
 
-#endif // PEERNGARECORDSWIDGET_H
+#endif // PEER_NGA_RECORDS_H

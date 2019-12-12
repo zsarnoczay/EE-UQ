@@ -49,11 +49,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QVBoxLayout>
 #include <RandomVariablesContainer.h>
 #include "StochasticModelWidget.h"
-#include "StochasticMotionInputWidget.h"
+#include "StochasticMotionInput.h"
 #include "VlachosEtAlModel.h"
 #include "DabaghiDerKiureghianPulse.h"
 
-StochasticMotionInputWidget::StochasticMotionInputWidget(
+StochasticMotionInput::StochasticMotionInput(
     RandomVariablesContainer* random_variables, QWidget* parent)
     : SimCenterAppWidget(parent),
       rv_input_widget_(random_variables) {
@@ -85,14 +85,14 @@ StochasticMotionInputWidget::StochasticMotionInputWidget(
   // Connect model selection slot
   connect(model_selection_,
           QOverload<const QString&>::of(&QComboBox::currentIndexChanged), this,
-          &StochasticMotionInputWidget::modelSelectionChanged);
+          &StochasticMotionInput::modelSelectionChanged);
 }
 
 
-StochasticMotionInputWidget::~StochasticMotionInputWidget()
+StochasticMotionInput::~StochasticMotionInput()
 {}
 
-bool StochasticMotionInputWidget::outputToJSON(QJsonObject& jsonObject) {
+bool StochasticMotionInput::outputToJSON(QJsonObject& jsonObject) {
   bool result = true;
   jsonObject["EventClassification"] = "Earthquake";
   jsonObject["type"] = "StochasticMotion";
@@ -108,7 +108,7 @@ bool StochasticMotionInputWidget::outputToJSON(QJsonObject& jsonObject) {
   return result;
 }
 
-bool StochasticMotionInputWidget::inputFromJSON(QJsonObject& jsonObject) {
+bool StochasticMotionInput::inputFromJSON(QJsonObject& jsonObject) {
   bool result = true;
 
   if (jsonObject.value("type").toString() == "StochasticMotion") {
@@ -144,7 +144,7 @@ bool StochasticMotionInputWidget::inputFromJSON(QJsonObject& jsonObject) {
   return result;
 }
 
-bool StochasticMotionInputWidget::outputAppDataToJSON(QJsonObject& jsonObject) {
+bool StochasticMotionInput::outputAppDataToJSON(QJsonObject& jsonObject) {
   bool result = true;
 
   jsonObject["Application"] = "StochasticGroundMotion";
@@ -172,11 +172,11 @@ bool StochasticMotionInputWidget::outputAppDataToJSON(QJsonObject& jsonObject) {
   return result;
 }
 
-bool StochasticMotionInputWidget::inputAppDataFromJSON(QJsonObject& jsonObject) {
+bool StochasticMotionInput::inputAppDataFromJSON(QJsonObject& jsonObject) {
   return true;
 }
 
-void StochasticMotionInputWidget::modelSelectionChanged(const QString& model) {
+void StochasticMotionInput::modelSelectionChanged(const QString& model) {
   // Switch the model description and form layout based on model selection
   if (model == "Vlachos et al. (2018)") {
     auto temp_model = stochastic_model_;
@@ -195,12 +195,12 @@ void StochasticMotionInputWidget::modelSelectionChanged(const QString& model) {
     delete temp_model;
     temp_model = nullptr;
   } else {
-    qDebug() << "ERROR: In StochasticMotionInputWidget::modelSelectionChanged: "
+    qDebug() << "ERROR: In StochasticMotionInput::modelSelectionChanged: "
                 "Unknown selection: "
              << model << "\n";
   }
 }
 
-void StochasticMotionInputWidget::errorMessage(QString message) {
+void StochasticMotionInput::errorMessage(QString message) {
   emit sendErrorMessage(message);
 }

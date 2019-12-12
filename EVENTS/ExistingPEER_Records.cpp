@@ -36,7 +36,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 // Written: fmckenna
 
-#include "ExistingPEER_Events.h"
+#include "ExistingPEER_Records.h"
 #include <InputWidgetExistingEvent.h>
 #include <RandomVariablesContainer.h>
 
@@ -301,7 +301,7 @@ PeerEvent::onRemoveRecord(bool) {
     }
 }
 
-ExistingPEER_Events::ExistingPEER_Events(RandomVariablesContainer *theRV_IW, QWidget *parent)
+ExistingPEER_Records::ExistingPEER_Records(RandomVariablesContainer *theRV_IW, QWidget *parent)
     : SimCenterAppWidget(parent), theRandVariableIW(theRV_IW)
 {
     verticalLayout = new QVBoxLayout();
@@ -367,13 +367,13 @@ ExistingPEER_Events::ExistingPEER_Events(RandomVariablesContainer *theRV_IW, QWi
 }
 
 
-ExistingPEER_Events::~ExistingPEER_Events()
+ExistingPEER_Records::~ExistingPEER_Records()
 {
 
 }
 
 
-void ExistingPEER_Events::addEvent(void)
+void ExistingPEER_Records::addEvent(void)
 {
    InputWidgetExistingEvent *theExisting = new InputWidgetExistingEvent(theRandVariableIW);
    PeerEvent *theEvent = new PeerEvent(theRandVariableIW);
@@ -382,7 +382,7 @@ void ExistingPEER_Events::addEvent(void)
    //connect(this,SLOT(InputWidgetExistingEventErrorMessage(QString)), theEvent, SIGNAL(sendErrorMessage(QString)));
 }
 
-void ExistingPEER_Events::loadEventsFromDir(void) {
+void ExistingPEER_Records::loadEventsFromDir(void) {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
                                                  "/home",
                                                  QFileDialog::ShowDirsOnly
@@ -470,7 +470,7 @@ void ExistingPEER_Events::loadEventsFromDir(void) {
 
 }
 
-void ExistingPEER_Events::removeEvents(void)
+void ExistingPEER_Records::removeEvents(void)
 {
     // find the ones selected & remove them
     int numInputWidgetExistingEvents = theEvents.size();
@@ -488,7 +488,7 @@ void ExistingPEER_Events::removeEvents(void)
 
 
 void
-ExistingPEER_Events::clear(void)
+ExistingPEER_Records::clear(void)
 {
   // loop over random variables, removing from layout & deleting
   for (int i = 0; i <theEvents.size(); ++i) {
@@ -501,10 +501,10 @@ ExistingPEER_Events::clear(void)
 
 
 bool
-ExistingPEER_Events::outputToJSON(QJsonObject &jsonObject)
+ExistingPEER_Records::outputToJSON(QJsonObject &jsonObject)
 {
     jsonObject["EventClassification"]="Earthquake";
-    jsonObject["type"] = "ExistingPEER_Events";
+    jsonObject["type"] = "ExistingPEER_Records";
 
     bool result = true;
     QJsonArray theArray;
@@ -523,7 +523,7 @@ ExistingPEER_Events::outputToJSON(QJsonObject &jsonObject)
 }
 
 bool
-ExistingPEER_Events::inputFromJSON(QJsonObject &jsonObject)
+ExistingPEER_Records::inputFromJSON(QJsonObject &jsonObject)
 {
     bool result = true;
 
@@ -559,7 +559,7 @@ ExistingPEER_Events::inputFromJSON(QJsonObject &jsonObject)
 
 
 bool
-ExistingPEER_Events::outputAppDataToJSON(QJsonObject &jsonObject) {
+ExistingPEER_Records::outputAppDataToJSON(QJsonObject &jsonObject) {
 
     //
     // per API, need to add name of application to be called in AppLication
@@ -567,19 +567,19 @@ ExistingPEER_Events::outputAppDataToJSON(QJsonObject &jsonObject) {
     //
 
     jsonObject["EventClassification"]="Earthquake";
-    jsonObject["Application"] = "ExistingPEER_Events";
+    jsonObject["Application"] = "ExistingPEER_Records";
     QJsonObject dataObj;
     jsonObject["ApplicationData"] = dataObj;
     return true;
 }
 
 bool
-ExistingPEER_Events::inputAppDataFromJSON(QJsonObject &jsonObject) {
+ExistingPEER_Records::inputAppDataFromJSON(QJsonObject &jsonObject) {
     return true;
 }
 
 bool 
-ExistingPEER_Events::copyFiles(QString &dirName) {
+ExistingPEER_Records::copyFiles(QString &dirName) {
 
     for (int i=0; i<theEvents.size(); i++) {
         PeerEvent *theEvent = theEvents.at(i);
@@ -595,7 +595,7 @@ ExistingPEER_Events::copyFiles(QString &dirName) {
 }
 
 void
-ExistingPEER_Events::errorMessage(QString message){
+ExistingPEER_Records::errorMessage(QString message){
     emit sendErrorMessage(message);
 }
 
