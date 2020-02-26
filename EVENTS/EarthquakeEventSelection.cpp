@@ -45,7 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <QStackedWidget>
 #include <QComboBox>
-
+#include <QSpacerItem>
 
 #include <QPushButton>
 #include <QJsonObject>
@@ -78,11 +78,14 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     //
 
     QHBoxLayout *theSelectionLayout = new QHBoxLayout();
-    QLabel *label = new QLabel();
-    label->setText(QString("Loading Type"));
+    //    QLabel *label = new QLabel();
+    SectionTitle *label=new SectionTitle();
+    label->setMinimumWidth(250);
+    label->setText(QString("Load Generator"));
+
     eventSelection = new QComboBox();
     eventSelection->setObjectName("LoadingTypeCombox");
-    //    eventSelection->addItem(tr("Existing"));
+
     eventSelection->addItem(tr("Stochastic Ground Motion"));
     eventSelection->addItem(tr("PEER NGA Records"));
     eventSelection->addItem(tr("Multiple PEER"));
@@ -90,10 +93,12 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     eventSelection->addItem(tr("Site Response"));
     eventSelection->addItem(tr("Multiple Existing"));
     eventSelection->addItem(tr("User Application"));
-
+    eventSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     eventSelection->setItemData(1, "A Seismic event using Seismic Hazard Analysis and Record Selection/Scaling", Qt::ToolTipRole);
 
     theSelectionLayout->addWidget(label);
+    QSpacerItem *spacer = new QSpacerItem(50,10);
+    theSelectionLayout->addItem(spacer);
     theSelectionLayout->addWidget(eventSelection);
     theSelectionLayout->addStretch();
     layout->addLayout(theSelectionLayout);
