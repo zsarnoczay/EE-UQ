@@ -108,7 +108,7 @@ WorkflowAppEE_UQ::WorkflowAppEE_UQ(RemoteService *theService, QWidget *parent)
     theRVs = new RandomVariablesContainer();
     theGI = GeneralInformationWidget::getInstance();
     theSIM = new SIM_Selection(theRVs);
-    theEventSelection = new EarthquakeEventSelection(theRVs);
+    theEventSelection = new EarthquakeEventSelection(theRVs, theGI);
     theAnalysisSelection = new FEM_Selection(theRVs);
     theUQ_Selection = new UQ_EngineSelection(theRVs);
     theEDP_Selection = new EDP_EarthquakeSelection(theRVs);
@@ -212,7 +212,7 @@ WorkflowAppEE_UQ::WorkflowAppEE_UQ(RemoteService *theService, QWidget *parent)
     // set the defults in the General Info
     //
 
-    theGI->setDefaultProperties(1,144,360,360,37.8716,-127.2717);
+    theGI->setDefaultProperties(1,144,360,360,37.8715,-122.2730);
 }
 
 WorkflowAppEE_UQ::~WorkflowAppEE_UQ()
