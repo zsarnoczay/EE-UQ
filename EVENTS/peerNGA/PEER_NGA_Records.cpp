@@ -21,6 +21,8 @@
 #include "USGSTargetWidget.h"
 #include "NSHMPTarget.h"
 #include <GoogleAnalytics.h>
+#include <QLineEdit>
+#include <QFileDialog>
 
 PEER_NGA_Records::PEER_NGA_Records(GeneralInformationWidget* generalInfoWidget, QWidget *parent) : SimCenterAppWidget(parent), groundMotionsFolder(QDir::tempPath())
 {
@@ -66,7 +68,7 @@ void PEER_NGA_Records::setupUI(GeneralInformationWidget* generalInfoWidget)
     targetSpectrumDetails->addWidget(nshmpTarget);
 
     auto recordSelectionGroup = new QGroupBox("Record Selection");
-    auto recordSelectionLayout = new QGridLayout(recordSelectionGroup);
+    recordSelectionLayout = new QGridLayout(recordSelectionGroup);
     recordSelectionLayout->addWidget(new QLabel("Number of Records"), 0, 0);
     nRecordsEditBox = new QLineEdit("16");
     nRecordsEditBox->setValidator(positiveIntegerValidator);
@@ -98,7 +100,7 @@ void PEER_NGA_Records::setupUI(GeneralInformationWidget* generalInfoWidget)
 
     vs30CheckBox = new QCheckBox("Vs30");
     recordSelectionLayout->addWidget(vs30CheckBox, 3, 0);
-    vs30Min = new QLineEdit("150");
+    vs30Min = new QLineEdit("150.0");
     vs30Min->setEnabled(false);
     vs30Min->setValidator(positiveDoubleValidator);
     recordSelectionLayout->addWidget(vs30Min, 3, 1);
@@ -108,10 +110,67 @@ void PEER_NGA_Records::setupUI(GeneralInformationWidget* generalInfoWidget)
     recordSelectionLayout->addWidget(vs30Max, 3, 2);
     recordSelectionLayout->addWidget(new QLabel("m/s"), 3, 3);
 
-    selectRecordsButton = new QPushButton("Select Records");
-    recordSelectionLayout->addWidget(selectRecordsButton, 4, 0, 1, 4);
+    targetSpectrumGroup->setMaximumHeight(200);
+    recordSelectionGroup->setMaximumHeight(200);
 
-    recordSelectionLayout->setRowStretch(recordSelectionLayout->rowCount(), 1);
+    auto scalingGroup = new QGroupBox("Scaling");
+    auto scalingLayout = new QGridLayout(scalingGroup);
+
+    scalingComboBox = new QComboBox();
+    scalingComboBox->addItem("No Scaling");
+    scalingComboBox->addItem("Minimize MSE");
+    scalingComboBox->addItem("Single Period");
+
+    scalingLayout->addWidget(new QLabel("Scaling Method:"), 0, 0);
+    scalingLayout->addWidget(scalingComboBox, 0, 1);
+
+    scalingPeriodLabel1 = new QLabel("Scaling Period (sec):");
+    scalingPeriodLineEdit = new QLineEdit("1.0");
+    scalingPeriodLabel2  = new QLabel("(Ti)");
+    scalingLayout->addWidget(scalingPeriodLabel1, 0, 2);
+    scalingLayout->addWidget(scalingPeriodLineEdit, 0, 3);
+    scalingLayout->addWidget(scalingPeriodLabel2, 0, 4);
+
+    weightFunctionHeadingLabel = new QLabel("Weight Function");
+    weightFunctionHeadingLabel->setStyleSheet("font-weight: bold;");
+
+    weightFunctionLabel = new QLabel("Weight function is used in both search and scaling when computing MSE. Values can be updated for rescaling. Intermediate points are interpolated with W = fxn(log(T))");
+    weightFunctionLabel->setWordWrap(true);
+
+    periodPointsLabel1 = new QLabel("Period Points :");
+    periodPointsLineEdit = new QLineEdit("0.01,0.05,0.1,0.5,1,5,10.0");
+    periodPointsLabel2 = new QLabel("(T1,T2, ... Tn)");
+
+    weightsLabel1 = new QLabel("Weights :");
+    weightsLineEdit = new QLineEdit("1.0,1.0,1.0,1.0,1.0,1.0,1.0");
+    weightsLabel2 = new QLabel("(W1,W2, ... Wn)");
+
+    scalingLayout->addWidget(weightFunctionHeadingLabel, 1, 0);
+    scalingLayout->addWidget(weightFunctionLabel, 1, 3, 4, 2);
+    scalingLayout->addWidget(periodPointsLabel1, 2, 0);
+    scalingLayout->addWidget(periodPointsLineEdit, 2, 1);
+    scalingLayout->addWidget(periodPointsLabel2, 2, 2);
+    scalingLayout->addWidget(weightsLabel1, 3, 0);
+    scalingLayout->addWidget(weightsLineEdit, 3, 1);
+    scalingLayout->addWidget(weightsLabel2, 3, 2);
+
+    selectRecordsButton = new QPushButton("Select Records");
+    scalingLayout->addWidget(selectRecordsButton, 4, 0, 1, 2);
+
+    this->onScalingComboBoxChanged(0);
+
+    // User-defined output directory
+    auto outdirGroup = new QGroupBox("Output Directory");
+    auto outdirLayout = new QGridLayout(outdirGroup);
+    // add stuff to enter Output Directory
+    QLabel *labelOD = new QLabel("Output Directory");
+    outdirLE = new QLineEdit;
+    QPushButton *chooseOutputDirectoryButton = new QPushButton();
+    chooseOutputDirectoryButton->setText(tr("Choose"));
+    connect(chooseOutputDirectoryButton,SIGNAL(clicked()),this,SLOT(chooseOutputDirectory()));
+    outdirLayout->addWidget(labelOD,0,0);
+    outdirLayout->addWidget(outdirLE,0,2);
+    outdirLayout->addWidget(chooseOutputDirectoryButton, 0, 4);
 
     //Records Table
     recordsTable = new QTableWidget();
@@ -121,9 +180,19 @@ void PEER_NGA_Records::setupUI(GeneralInformationWidget* generalInfoWidget)
     auto groundMotionsGroup = new QGroupBox("Ground Motions");
     auto groundMotionsLayout = new QGridLayout(groundMotionsGroup);
     groundMotionsComponentsBox = new QComboBox();
+    /*
     groundMotionsComponentsBox->addItem("One (Horizontal)", GroundMotionComponents::One);
     groundMotionsComponentsBox->addItem("Two (Horizontal)", GroundMotionComponents::Two);
     groundMotionsComponentsBox->addItem("Three (Horizontal & Vertical)", GroundMotionComponents::Three);
+    */
+    groundMotionsComponentsBox->addItem("SRSS", GroundMotionComponents::Two);
+    groundMotionsComponentsBox->addItem("RotD100", GroundMotionComponents::Two);
+    groundMotionsComponentsBox->addItem("RotD50", GroundMotionComponents::Two);
+    groundMotionsComponentsBox->addItem("GeoMean", GroundMotionComponents::Two);
+    groundMotionsComponentsBox->addItem("H1", GroundMotionComponents::One);
+    groundMotionsComponentsBox->addItem("H2", GroundMotionComponents::One);
+    groundMotionsComponentsBox->addItem("V", GroundMotionComponents::Three);
+
     groundMotionsLayout->addWidget(new QLabel("Acceleration Components"), 0, 0);
     groundMotionsLayout->addWidget(groundMotionsComponentsBox, 0, 1);
     recordsTable->setMinimumHeight(200);
@@ -138,19 +207,22 @@ void PEER_NGA_Records::setupUI(GeneralInformationWidget* generalInfoWidget)
 
     layout->addWidget(targetSpectrumGroup, 0, 0);
     layout->addWidget(recordSelectionGroup, 0, 1);
-    layout->addWidget(groundMotionsGroup, 1, 0, 1, 2);
+    layout->addWidget(scalingGroup, 1, 0, 1, 2);
+    layout->addWidget(groundMotionsGroup, 2, 0, 1, 2);
+    // Output directory group location
+    layout->addWidget(outdirGroup, 3, 0, 1, 2);
 
     auto peerCitation = new QLabel("This tool uses PEER NGA West 2 Ground Motions Database. "
-    "Users should cite the database as follows: PEER 2013/03 – PEER NGA-West2 Database, "
-    "Timothy D. Ancheta, Robert B. Darragh, Jonathan P. Stewart, Emel Seyhan, Walter J. Silva, "
-    "Brian S.J. Chiou, Katie E. Wooddell, Robert W. Graves, Albert R. Kottke, "
-    "David M. Boore, Tadahiro Kishida, and Jennifer L. Donahue.");
+                                   "Users should cite the database as follows: PEER 2013/03 – PEER NGA-West2 Database, "
+                                   "Timothy D. Ancheta, Robert B. Darragh, Jonathan P. Stewart, Emel Seyhan, Walter J. Silva, "
+                                   "Brian S.J. Chiou, Katie E. Wooddell, Robert W. Graves, Albert R. Kottke, "
+                                   "David M. Boore, Tadahiro Kishida, and Jennifer L. Donahue.");
 
     peerCitation->setWordWrap(true);
-    layout->addWidget(peerCitation, 2, 0, 1, 3);
+    layout->addWidget(peerCitation, 4, 0, 1, 3);
 
     //layout->addWidget(thePlottingWindow, 0,3,2,1);
-    layout->addWidget(&recordSelectionPlot, 0,3,2,1);
+    layout->addWidget(&recordSelectionPlot, 0,3,4,1);
 
     recordSelectionPlot.setHidden(true);
 
@@ -161,8 +233,13 @@ void PEER_NGA_Records::setupUI(GeneralInformationWidget* generalInfoWidget)
 
 void PEER_NGA_Records::setupConnections()
 {
+    // Output directory check
+    if(outdirpath.compare("NULL") == 0)
+        this->chooseOutputDirectory();
+
     connect(selectRecordsButton, &QPushButton::clicked, this, [this]()
     {
+
         if(!peerClient.loggedIn())
         {
             PeerLoginDialog loginDialog(&peerClient, this);
@@ -178,7 +255,13 @@ void PEER_NGA_Records::setupConnections()
 
     connect(&peerClient, &PeerNgaWest2Client::recordsDownloaded, this, [this](QString recordsFile)
     {
-        auto tempRecordsDir = QDir(groundMotionsFolder.path());
+        // auto tempRecordsDir = QDir(groundMotionsFolder.path());
+        // Adding user-defined output directory
+        RecordsDir = this->outdirLE->text();
+        if (RecordsDir.isEmpty()) {
+            RecordsDir = groundMotionsFolder.path();
+        }
+        auto tempRecordsDir = QDir(RecordsDir);
         //Cleaning up previous search results
         if(tempRecordsDir.exists("_SearchResults.csv"))
             tempRecordsDir.remove("_SearchResults.csv");
@@ -246,6 +329,8 @@ void PEER_NGA_Records::setupConnections()
         connect(targetWidget, &AbstractTargetWidget::statusUpdated, this, &PEER_NGA_Records::updateStatus);
     }
 
+
+    connect(scalingComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onScalingComboBoxChanged(int)));
 }
 
 void PEER_NGA_Records::processPeerRecords(QDir resultFolder)
@@ -337,6 +422,17 @@ void PEER_NGA_Records::updateStatus(QString status)
 
 void PEER_NGA_Records::selectRecords()
 {
+
+    // Set the search scaling parameters
+    // 0 is not scaling
+    // 1 is minimize MSE
+    // 2 is single period scaling
+    auto scaleFlag = scalingComboBox->currentIndex();
+    auto periodPoints = periodPointsLineEdit->text();
+    auto weightPoints = weightsLineEdit->text();
+    auto scalingPeriod = scalingPeriodLineEdit->text();
+    peerClient.setScalingParameters(scaleFlag,periodPoints,weightPoints,scalingPeriod);
+
     GoogleAnalytics::Report("RecordSelection", "PEER");
 
     QVariant magnitudeRange;
@@ -357,7 +453,10 @@ void PEER_NGA_Records::selectRecords()
         peerClient.selectRecords(asce710widget->sds(),
                                  asce710widget->sd1(),
                                  asce710widget->tl(),
-                                 nRecordsEditBox->text().toInt(), magnitudeRange, distanceRange, vs30Range);
+                                 nRecordsEditBox->text().toInt(),
+				 magnitudeRange,
+				 distanceRange,
+                 vs30Range,groundMotionsComponentsBox->currentIndex()+1);
     }
     else
     {
@@ -478,7 +577,8 @@ bool PEER_NGA_Records::outputToJSON(QJsonObject &jsonObject)
         QJsonObject recordH1Json;
         //Adding Horizontal1 in dof 1 direction
         recordH1Json["fileName"] = record.Horizontal1File;
-        recordH1Json["filePath"] = groundMotionsFolder.path();
+        // recordH1Json["filePath"] = groundMotionsFolder.path();
+        recordH1Json["filePath"] = RecordsDir;
         recordH1Json["dirn"] = 1;
         recordH1Json["factor"] = record.Scale;
 
@@ -490,7 +590,8 @@ bool PEER_NGA_Records::outputToJSON(QJsonObject &jsonObject)
             QJsonObject recordH2Json;
             //Adding Horizontal2 in dof 2 direction
             recordH2Json["fileName"] = record.Horizontal2File;
-            recordH2Json["filePath"] = groundMotionsFolder.path();
+            // recordH2Json["filePath"] = groundMotionsFolder.path();
+            recordH2Json["filePath"] = RecordsDir;
             recordH2Json["dirn"] = 2;
             recordH2Json["factor"] = record.Scale;
 
@@ -502,7 +603,8 @@ bool PEER_NGA_Records::outputToJSON(QJsonObject &jsonObject)
             QJsonObject recordH3Json;
             //Adding Horizontal3 in dof 3 direction
             recordH3Json["fileName"] = record.VerticalFile;
-            recordH3Json["filePath"] = groundMotionsFolder.path();
+            // recordH3Json["filePath"] = groundMotionsFolder.path();
+            recordH3Json["filePath"] = RecordsDir;
             recordH3Json["dirn"] = 3;
             recordH3Json["factor"] = record.Scale;
 
@@ -597,7 +699,8 @@ bool PEER_NGA_Records::inputAppDataFromJSON(QJsonObject &jsonObject)
 
 bool PEER_NGA_Records::copyFiles(QString &destDir)
 {
-    QDir recordsFolder(groundMotionsFolder.path());
+    // QDir recordsFolder(groundMotionsFolder.path());
+    QDir recordsFolder(RecordsDir);
     QDir destinationFolder(destDir);
     for (auto& record:currentRecords)
     {
@@ -625,3 +728,77 @@ bool PEER_NGA_Records::copyFiles(QString &destDir)
 
     return true;
 }
+
+void PEER_NGA_Records::onScalingComboBoxChanged(const int index)
+{
+    if(index == 0)
+    {
+        weightFunctionHeadingLabel->hide();
+        weightFunctionLabel->hide();
+        periodPointsLabel1->hide();
+        periodPointsLineEdit->hide();
+        periodPointsLabel2->hide();
+        weightsLabel1->hide();
+        weightsLineEdit->hide();
+        weightsLabel2->hide();
+        scalingPeriodLabel1->hide();
+        scalingPeriodLineEdit->hide();
+        scalingPeriodLabel2->hide();
+
+        return;
+    }
+    else  // Show minimize MSE and scaling inputs
+    {
+        weightFunctionHeadingLabel->show();
+        weightFunctionLabel->show();
+        periodPointsLabel1->show();
+        periodPointsLineEdit->show();
+        periodPointsLabel2->show();
+        weightsLabel1->show();
+        weightsLineEdit->show();
+        weightsLabel2->show();
+
+        if(index == 2) // Show single period inputs
+        {
+            scalingPeriodLabel1->show();
+            scalingPeriodLineEdit->show();
+            scalingPeriodLabel2->show();
+        }
+        else
+        {
+            scalingPeriodLabel1->hide();
+            scalingPeriodLineEdit->hide();
+            scalingPeriodLabel2->hide();
+        }
+    }
+}
+
+void
+PEER_NGA_Records::setOutputDirectory(QString dirpath) {
+    outdirLE->setText(dirpath);
+    return;
+}
+
+void
+PEER_NGA_Records::chooseOutputDirectory(void) {
+    outdirpath=QFileDialog::getExistingDirectory(this,tr("Output Folder"));
+    if(outdirpath.isEmpty())
+    {
+        outdirpath = "NULL";
+        return;
+    }
+    this->setOutputDirectory(outdirpath);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+

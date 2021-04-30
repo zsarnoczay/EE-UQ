@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<collection>
+    <tag-scheme key="">
+        <tag-scheme key="UV" src="../../SimCenterDocumentation/docs/common/requirements/tags.xml#UV" />
+        <tag-scheme key="UM" src="../../SimCenterDocumentation/docs/common/requirements/tags.xml#UM" />
+        <tag-scheme key="EL" src="../../SimCenterDocumentation/docs/common/requirements/tags.xml#EL" />
+    </tag-scheme>
+    <category-schemes>
+      <category-scheme key="Difficulty">
+        <var cast="str" src="./meta.yaml#/difficulty" />
+        <map>
+            <str key="0">Beginner</str>
+            <str key="1">Intermediate</str>
+            <str key="2">Advanced</str>
+        </map>
+      </category-scheme>
+    </category-schemes>
+     <category-scheme key="Simulation">
+         <var src="./src/input.json#/Applications/Simulation/Application" />
+      <map>
+        <str key="IMasEDP">IMasEDP</str>
+        <str key="OpenSees-Simulation">OpenSees</str>
+        <str key="OpenSeesPy-Simulation">OpenSeesPy</str>
+      </map>
+      </category-scheme>
+
+  <items>
+    <map id="eeuq-0001" base="eeuq-0001" type="eeuq" published="2020-12-17T21:26:53.946381-08:00"/>
+    <map id="eeuq-0002" base="eeuq-0002" type="eeuq" published="2021-03-17T21:26:53.946381-08:00"/>
+    <map id="eeuq-0003" base="eeuq-0003" type="eeuq" published="2021-03-17T21:26:53.946381-08:00"/>
+    <map id="eeuq-0004" base="eeuq-0004" type="eeuq" published="2021-03-17T21:26:53.946381-08:00"/>
+    <map id="eeuq-0005" base="eeuq-0005" type="eeuq" published="2021-03-17T21:26:53.946381-08:00"/>
+  </items>
+</collection>

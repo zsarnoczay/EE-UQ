@@ -10,6 +10,7 @@
 #include <QFile>
 #include <QTableWidget>
 #include <QTemporaryDir>
+#include <QPointer>
 #include <QVector>
 #include <QCheckBox>
 #include "RecordSelectionPlot.h"
@@ -19,6 +20,8 @@
 
 
 class QComboBox;
+class QLabel;
+class QGroupBox;
 
 struct PeerScaledRecord
 {
@@ -53,9 +56,14 @@ public:
     enum GroundMotionComponents{One, Two, Three};
     Q_ENUM(GroundMotionComponents)
 
+    void setOutputDirectory(QString filename);
+
 signals:
 
 public slots:
+
+    void onScalingComboBoxChanged(const int index);
+    void chooseOutputDirectory(void);
 
 private:
     PeerNgaWest2Client peerClient;
@@ -67,6 +75,7 @@ private:
     QProgressBar* progressBar;
     QComboBox* spectrumTypeComboBox;
     QStackedWidget* targetSpectrumDetails;
+    QGridLayout* recordSelectionLayout;
 
     //Magnitude Range
     QCheckBox* magnitudeCheckBox;
@@ -84,6 +93,22 @@ private:
     QLineEdit* vs30Max;
     QTemporaryDir groundMotionsFolder;
 
+    //Scaling
+    QComboBox* scalingComboBox;
+    QLabel* scalingPeriodLabel1;
+    QLineEdit* scalingPeriodLineEdit;
+    QLabel* scalingPeriodLabel2;
+
+    //Weight function inputs
+    QPointer<QLabel> weightFunctionHeadingLabel;
+    QPointer<QLabel> weightFunctionLabel;
+    QPointer<QLabel> periodPointsLabel1;
+    QPointer<QLineEdit> periodPointsLineEdit;
+    QPointer<QLabel> periodPointsLabel2;
+    QPointer<QLabel> weightsLabel1;
+    QPointer<QLineEdit> weightsLineEdit;
+    QPointer<QLabel> weightsLabel2;
+
     //Record Selection Members
     QList<PeerScaledRecord> currentRecords;
     QVector<QVector<double>> scaledSelectedSpectra;
@@ -92,6 +117,11 @@ private:
     QVector<double> meanPlusSigmaSpectrum;
     QVector<double> meanMinusSigmaSpectrum;
     QVector<double> targetSpectrum;
+
+    // Output directory
+    QLineEdit* outdirLE;
+    QString outdirpath;
+    QString RecordsDir;
 
     void setupUI(GeneralInformationWidget* generalInfoWidget);
     void setupConnections();

@@ -84,6 +84,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QtNetwork/QNetworkRequest>
 #include <QHostInfo>
 #include <DakotaResultsSampling.h>
+#include <Utils/PythonProgressDialog.h>
 
 #include <GoogleAnalytics.h>
 
@@ -116,8 +117,11 @@ WorkflowAppEE_UQ::WorkflowAppEE_UQ(RemoteService *theService, QWidget *parent)
     //theResults = new DakotaResultsSampling(theRVs);
     theResults = theUQ_Selection->getResults();
 
-    localApp = new LocalApplication("EE-UQ workflow.py");
-    remoteApp = new RemoteApplication("EE-UQ workflow.py", theService);
+    localApp = new LocalApplication("sWHALE.py");
+    remoteApp = new RemoteApplication("sWHALE.py", theService);
+
+    //    localApp = new LocalApplication("EE-UQ workflow.py");
+    //   remoteApp = new RemoteApplication("EE-UQ workflow.py", theService);
 
     // localApp = new LocalApplication("EE-UQ.py");
     // remoteApp = new RemoteApplication("EE-UQ.py", theService);
@@ -169,7 +173,12 @@ WorkflowAppEE_UQ::WorkflowAppEE_UQ(RemoteService *theService, QWidget *parent)
     connect(theJobManager,SIGNAL(loadFile(QString)), this, SLOT(loadFile(QString)));
 
     connect(remoteApp,SIGNAL(successfullJobStart()), theRunWidget, SLOT(hide()));
-       
+
+    connect(localApp,SIGNAL(runComplete()), this, SLOT(runComplete()));
+    connect(remoteApp,SIGNAL(successfullJobStart()), this, SLOT(runComplete()));
+    connect(theService, SIGNAL(closeDialog()), this, SLOT(runComplete()));
+    connect(theJobManager, SIGNAL(closeDialog()), this, SLOT(runComplete()));
+
     //connect(theRunLocalWidget, SIGNAL(runButtonPressed(QString, QString)), this, SLOT(runLocal(QString, QString)));
 
 
@@ -180,6 +189,8 @@ WorkflowAppEE_UQ::WorkflowAppEE_UQ(RemoteService *theService, QWidget *parent)
 
     QHBoxLayout *horizontalLayout = new QHBoxLayout();
     this->setLayout(horizontalLayout);
+    this->setContentsMargins(0,5,0,5);
+    horizontalLayout->setMargin(0);
 
     //
     // create the component selection & add the components to it
@@ -213,6 +224,10 @@ WorkflowAppEE_UQ::WorkflowAppEE_UQ(RemoteService *theService, QWidget *parent)
     //
 
     theGI->setDefaultProperties(1,144,360,360,37.8715,-122.2730);
+
+    PythonProgressDialog *theDialog=PythonProgressDialog::getInstance();
+    theDialog->appendInfoMessage("Welcome to EE-UQ");
+    theDialog->hideAfterElapsedTime(1);
 }
 
 WorkflowAppEE_UQ::~WorkflowAppEE_UQ()
@@ -237,30 +252,44 @@ WorkflowAppEE_UQ::outputToJSON(QJsonObject &jsonObjectTop) {
     //
     // get each of the main widgets to output themselves
     //
-
+    bool result = true;
     QJsonObject apps;
 
     QJsonObject jsonObjGenInfo;
-    theGI->outputToJSON(jsonObjGenInfo);
+    result = theGI->outputToJSON(jsonObjGenInfo);
+    if (result == false)
+        return result;
+
     jsonObjectTop["GeneralInformation"] = jsonObjGenInfo;
 
     QJsonObject jsonObjStructural;
-    theSIM->outputToJSON(jsonObjStructural);
+    result = theSIM->outputToJSON(jsonObjStructural);
+    if (result == false)
+        return result;
 
     jsonObjectTop["StructuralInformation"] = jsonObjStructural;
     QJsonObject appsSIM;
-    theSIM->outputAppDataToJSON(appsSIM);
-
+    result = theSIM->outputAppDataToJSON(appsSIM);
+    if (result == false)
+        return result;
     apps["Modeling"]=appsSIM;
 
-    theRVs->outputToJSON(jsonObjectTop);
+    result = theRVs->outputToJSON(jsonObjectTop);
+    if (result == false)
+        return result;
 
     QJsonObject jsonObjectEDP;
-    theEDP_Selection->outputToJSON(jsonObjectEDP);
+    result = theEDP_Selection->outputToJSON(jsonObjectEDP);
+    if (result == false)
+        return result;
+
     jsonObjectTop["EDP"] = jsonObjectEDP;
 
     QJsonObject appsEDP;
-    theEDP_Selection->outputAppDataToJSON(appsEDP);
+    result = theEDP_Selection->outputAppDataToJSON(appsEDP);
+    if (result == false)
+        return result;
+
     apps["EDP"]=appsEDP;
 
     /*
@@ -269,24 +298,40 @@ WorkflowAppEE_UQ::outputToJSON(QJsonObject &jsonObjectTop) {
     jsonObjectTop["UQ_Method"] = jsonObjectUQ;
     */
 
+    result = theUQ_Selection->outputAppDataToJSON(apps);
+    if (result == false)
+        return result;
 
-    theUQ_Selection->outputAppDataToJSON(apps);
-    theUQ_Selection->outputToJSON(jsonObjectTop);
+    result = theUQ_Selection->outputToJSON(jsonObjectTop);
+    if (result == false)
+        return result;
 
-    theAnalysisSelection->outputAppDataToJSON(apps);
-    theAnalysisSelection->outputToJSON(jsonObjectTop);
+    result = theAnalysisSelection->outputAppDataToJSON(apps);
+    if (result == false)
+        return result;
+
+    result = theAnalysisSelection->outputToJSON(jsonObjectTop);
+    if (result == false)
+        return result;
 
    // NOTE: Events treated differently, due to array nature of objects
-    theEventSelection->outputToJSON(jsonObjectTop);
-    theEventSelection->outputAppDataToJSON(apps);
+    result = theEventSelection->outputToJSON(jsonObjectTop);
+    if (result == false)
+        return result;
 
-    theRunWidget->outputToJSON(jsonObjectTop);
+    result = theEventSelection->outputAppDataToJSON(apps);
+    if (result == false)
+        return result;
+
+    result = theRunWidget->outputToJSON(jsonObjectTop);
+    if (result == false)
+        return result;
 
     jsonObjectTop["Applications"]=apps;
 
     //theRunLocalWidget->outputToJSON(jsonObjectTop);
 
-    return true;
+    return result;
 }
 
 
@@ -541,8 +586,10 @@ WorkflowAppEE_UQ::setUpForApplicationRun(QString &workingDir, QString &subDir) {
         return;
     }
     QJsonObject json;
-    this->outputToJSON(json);
-
+    if (this->outputToJSON(json) == false) {
+        emit errorMessage("WorkflowApp - failed in outputToJson");
+        return;
+    }
     json["runDir"]=tmpDirectory;
     json["WorkflowType"]="Building Simulation";
 
@@ -559,6 +606,8 @@ WorkflowAppEE_UQ::setUpForApplicationRun(QString &workingDir, QString &subDir) {
 
 void
 WorkflowAppEE_UQ::loadFile(const QString fileName){
+
+    errorMessage("");
 
     //
     // open file
@@ -594,3 +643,4 @@ int
 WorkflowAppEE_UQ::getMaxNumParallelTasks() {
     return theUQ_Selection->getNumParallelTasks();
 }
+

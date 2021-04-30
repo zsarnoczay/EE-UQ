@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += core gui charts concurrent network sql qml webenginewidgets uitools webengine webchannel 3dcore 3drender 3dextras charts
+QT += core gui charts concurrent network sql qml webenginewidgets uitools webengine webchannel 3dcore 3drender 3dextras
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,38 +16,46 @@ RCC_DIR = $$OUT_PWD/.rcc
 TARGET = EE_UQ
 TEMPLATE = app
 
-VERSION=2.1.0
+VERSION=2.2.3
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+DEFINES += NOINTERNALFEM
 
 include($$PWD/ConanHelper.pri)
 
 win32{
-    LIBS -= -llapacke.dll.lib -llapack.dll.lib -lblas.dll.lib -lcblas.dll.lib
-    LIBS += -llapacke.dll -llapack.dll -lblas.dll -lcblas.dll -lAdvapi32
+    LIBS = $$replace(LIBS, .dll.lib, .dll)
+    LIBS += -lAdvapi32
+    LIBS +=CRYPT32.lib
+    LIBS +=Ws2_32.lib
+    LIBS+=User32.lib
+    DEFINES += CURL_STATICLIB
 }
 
+
+linux{
+
+}
 
 win32 {
     RC_ICONS = icons/NHERI-EEUQ-Icon.ico
 } else {
     mac {
     ICON = icons/NHERI-EEUQ-Icon.icns
+    DEFINES += _GRAPHICS_Qt3D
+    QMAKE_INFO_PLIST=$$PWD/Info.plist
     }
 }
-
 
 include(../SimCenterCommon/Common/Common.pri)
 include(../SimCenterCommon/Workflow/Workflow.pri)
 include(../SimCenterCommon/RandomVariables/RandomVariables.pri)
 include(../SimCenterCommon/InputSheetBM/InputSheetBM.pri)
-include(../s3hark/s3hark.pri)
+include(../QS3hark/QS3hark.pri)
 include(./EarthquakeEvents.pri)
-
 
 SOURCES += main.cpp \
     WorkflowAppEE_UQ.cpp \
     RunWidget.cpp
-
 
 HEADERS  += \
     WorkflowAppEE_UQ.h\
