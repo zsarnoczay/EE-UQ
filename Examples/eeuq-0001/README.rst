@@ -22,7 +22,7 @@ The structure has uncertain properties that all follow normal distribution:
 
 The goal of the exercise is to estimate the mean and standard deviation of the relative displacement of the fourth node when subjected to an El Centro ground motion record.
 
-The exercise will use both the MDOF, :ref:`lblMDOFSIM`,  and OpenSees, :ref:`lblOpenSeesSIM`, structural generators. For the OpenSees generator the following model script, `ShearBuilding3.tcl <https://github.com/NHERI-SimCenter/EE-UQ/blob/master/Examples/ShearBuilding3/ShearBuilding3.tcl>`_ , is used:
+The exercise will use both the MDOF, :ref:`lblMDOFSIM`,  and OpenSees, :ref:`lblOpenSeesSIM`, structural generators. For the OpenSees generator the following model script, `ShearBuilding3.tcl <https://github.com/NHERI-SimCenter/EE-UQ/blob/master/Examples/eeuq-0001/src/ShearBuilding3.tcl>`_ , is used:
 
 .. literalinclude:: src/ShearBuilding3.tcl
    :language: tcl
@@ -49,6 +49,10 @@ To perform a Sampling or Forward propagation uncertainty analysis the user would
    :align: center
    :figclass: align-center
 
+.. note::
+
+   When loading the example from the tool page, the number of samples is set to ``50``.
+	      
 2. The **GI** panel will not be used for this run; For the time being leave the default values as is, and they will be automatically updated based on the information entered in the remaining tabs.
 
 3. Next select the **SIM** panel from the input panel. This will default in the MDOF model generator. We will use this generator (the NOTE below contains instruction on how to use the OpenSees script instead). In the building information panel, specify number of stories as **3** (this will change the graphic). Also in the Building information frame specify **w** for the floor weights and **k** for story stiffness. Finally in the table below, go to the third row and enter **wR** for the roof weight (you will notice that when you enter that table cell the node at the top of the model will turn red, indicating you are editing the information for the top most node).
@@ -94,7 +98,6 @@ To perform a Sampling or Forward propagation uncertainty analysis the user would
 .. figure:: figures/shearRV.png
    :align: center
    :figclass: align-center
-.. note::
 
 .. warning::   
 

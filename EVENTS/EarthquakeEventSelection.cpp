@@ -39,6 +39,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // Written: fmckenna
 
 #include "EarthquakeEventSelection.h"
+#include <GoogleAnalytics.h>
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -66,12 +67,13 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "StochasticMotionInput.h"
 #include "RockOutcrop.h"
 #include "peerNGA/PEER_NGA_Records.h"
-
+#include "userDefinedDatabase/User_Defined_Database.h"
+#include <QScrollArea>
 
 EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *theRandomVariableIW, GeneralInformationWidget* generalInfoWidget, QWidget *parent)
     : SimCenterAppWidget(parent), theCurrentEvent(0), theRandomVariablesContainer(theRandomVariableIW)
 {
-    QVBoxLayout *layout = new QVBoxLayout();
+    QGridLayout *layout = new QGridLayout();
 
     //
     // the selection part
@@ -91,9 +93,10 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     eventSelection->addItem(tr("Site Response"));
     eventSelection->addItem(tr("Multiple PEER"));
     eventSelection->addItem(tr("Multiple SimCenter"));
+    eventSelection->addItem(tr("User Specified Database"));
     //    eventSelection->addItem(tr("Hazard Based Event"));
     // eventSelection->addItem(tr("User Application"));
-    eventSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    eventSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     eventSelection->setItemData(1, "A Seismic event using Seismic Hazard Analysis and Record Selection/Scaling", Qt::ToolTipRole);
 
     theSelectionLayout->addWidget(label);
@@ -101,13 +104,22 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     theSelectionLayout->addItem(spacer);
     theSelectionLayout->addWidget(eventSelection);
     theSelectionLayout->addStretch();
-    layout->addLayout(theSelectionLayout);
+    layout->addLayout(theSelectionLayout,0,1,1,1);
 
     //
     // create the stacked widget
     //
-    theStackedWidget = new QStackedWidget();
 
+    QScrollArea *sa = new QScrollArea;
+    sa->setWidgetResizable(true);
+    sa->setLineWidth(0);
+    sa->setFrameShape(QFrame::NoFrame);      
+    
+    theStackedWidget = new QStackedWidget();
+    layout->addWidget(theStackedWidget,1,1,6,1);
+
+    //sa->setWidget(theStackedWidget);
+    
     //
     // create the individual load widgets & add to stacked widget
     //
@@ -143,10 +155,28 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     //    theUserDefinedApplication = new UserDefinedApplication(theRandomVariablesContainer);
     //theStackedWidget->addWidget(theUserDefinedApplication);
 
+    //Adding user defined database ground motion widget
+    userDefinedDatabase = new User_Defined_Database(generalInfoWidget, this);
+    theStackedWidget->addWidget(userDefinedDatabase);
 
-    layout->addWidget(theStackedWidget);
+
+    //layout->addWidget(theStackedWidget);
+    //layout->addWidget(sa);
     layout->setMargin(0);
-    this->setLayout(layout);
+
+    // add Intensity Widget
+    //theSCIMWidget = new SimCenterIntensityMeasureWidget();
+    //layout->addWidget(theSCIMWidget,7,1,3,1);
+
+    QGroupBox *allWidgets = new QGroupBox();
+    allWidgets->setLayout(layout);
+
+    sa->setWidget(allWidgets);
+
+    QVBoxLayout *global_layout = new QVBoxLayout();
+    global_layout->addWidget(sa);
+
+    this->setLayout(global_layout);
     theCurrentEvent=theStochasticMotionWidget;
 
     //
@@ -155,29 +185,6 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
 
     connect(eventSelection, SIGNAL(currentIndexChanged(QString)), this, SLOT(eventSelectionChanged(QString)));
 
-    connect(theStochasticMotionWidget, &SimCenterAppWidget::sendErrorMessage, this, [this](QString message) {emit sendErrorMessage(message);});
-    connect(theStochasticMotionWidget, &SimCenterAppWidget::sendFatalMessage, this, [this](QString message) {emit sendFatalMessage(message);});
-    connect(theStochasticMotionWidget, &SimCenterAppWidget::sendStatusMessage, this, [this](QString message) {emit sendStatusMessage(message);});
-
-    connect(theRockOutcrop, &SimCenterAppWidget::sendErrorMessage, this, [this](QString message) {emit sendErrorMessage(message);});
-    connect(theRockOutcrop, &SimCenterAppWidget::sendFatalMessage, this, [this](QString message) {emit sendFatalMessage(message);});
-    connect(theRockOutcrop, &SimCenterAppWidget::sendStatusMessage, this, [this](QString message) {emit sendStatusMessage(message);});
-
-    //connect(theSHA_MotionWidget, &SimCenterAppWidget::sendErrorMessage, this, [this](QString message) {emit sendErrorMessage(message);});
-    //connect(theSHA_MotionWidget, &SimCenterAppWidget::sendFatalMessage, this, [this](QString message) {emit sendFatalMessage(message);});
-    //connect(theSHA_MotionWidget, &SimCenterAppWidget::sendStatusMessage, this, [this](QString message) {emit sendStatusMessage(message);});
-
-    connect(theExistingEvents, &SimCenterAppWidget::sendErrorMessage, this, [this](QString message) {emit sendErrorMessage(message);});
-    connect(theExistingEvents, &SimCenterAppWidget::sendFatalMessage, this, [this](QString message) {emit sendFatalMessage(message);});
-    connect(theExistingEvents, &SimCenterAppWidget::sendStatusMessage, this, [this](QString message) {emit sendStatusMessage(message);});
-
-    connect(theExistingPeerEvents, &SimCenterAppWidget::sendErrorMessage, this, [this](QString message) {emit sendErrorMessage(message);});
-    connect(theExistingPeerEvents, &SimCenterAppWidget::sendFatalMessage, this, [this](QString message) {emit sendFatalMessage(message);});
-    connect(theExistingPeerEvents, &SimCenterAppWidget::sendStatusMessage, this, [this](QString message) {emit sendStatusMessage(message);});
-
-    connect(peerNgaRecords, &SimCenterAppWidget::sendErrorMessage, this, [this](QString message) {emit sendErrorMessage(message);});
-    connect(peerNgaRecords, &SimCenterAppWidget::sendFatalMessage, this, [this](QString message) {emit sendFatalMessage(message);});
-    connect(peerNgaRecords, &SimCenterAppWidget::sendStatusMessage, this, [this](QString message) {emit sendStatusMessage(message);});
 }
 
 EarthquakeEventSelection::~EarthquakeEventSelection()
@@ -191,11 +198,15 @@ EarthquakeEventSelection::outputToJSON(QJsonObject &jsonObject)
 {
     QJsonArray eventArray;
     QJsonObject singleEventData;
-    theCurrentEvent->outputToJSON(singleEventData);
+    bool result = theCurrentEvent->outputToJSON(singleEventData);
     eventArray.append(singleEventData);
     jsonObject["Events"]=eventArray;
 
-    return true;
+    //QJsonObject imJson;
+    //result = theSCIMWidget->outputToJSON(imJson);
+    //jsonObject["IntensityMeasure"] = imJson;
+
+    return result;
 }
 
 
@@ -236,11 +247,13 @@ void EarthquakeEventSelection::eventSelectionChanged(const QString &arg1)
     if (arg1 == "Multiple SimCenter") {
         theStackedWidget->setCurrentIndex(4);
         theCurrentEvent = theExistingEvents;
+	currentEventType="SimCenter";      	
     }
 
     else if(arg1 == "Multiple PEER") {
         theStackedWidget->setCurrentIndex(3);
         theCurrentEvent = theExistingPeerEvents;
+	currentEventType="PEER";      	
     }
     
     /*
@@ -253,11 +266,13 @@ void EarthquakeEventSelection::eventSelectionChanged(const QString &arg1)
     else if (arg1 == "Site Response") {
       theStackedWidget->setCurrentIndex(2);
       theCurrentEvent = theRockOutcrop;
+      currentEventType="SiteResponse";      
     }
 
     else if (arg1 == "Stochastic Ground Motion") {
       theStackedWidget->setCurrentIndex(0);
       theCurrentEvent = theStochasticMotionWidget;
+      currentEventType="StochasticGroundMotion";			      
     }
 
     /*
@@ -270,6 +285,13 @@ void EarthquakeEventSelection::eventSelectionChanged(const QString &arg1)
     else if(arg1 == "PEER NGA Records") {
         theStackedWidget->setCurrentIndex(1);
         theCurrentEvent = peerNgaRecords;
+	currentEventType="PEER_NGA";      	
+    }
+
+    else if(arg1 == "User Specified Database") {
+        theStackedWidget->setCurrentIndex(5);
+        theCurrentEvent = userDefinedDatabase;
+	currentEventType="UserDatabase";
     }
     else {
         qDebug() << "ERROR .. EarthquakeEventSelection selection .. type unknown: " << arg1;
@@ -319,24 +341,32 @@ EarthquakeEventSelection::inputAppDataFromJSON(QJsonObject &jsonObject)
     if ((type == QString("Existing Events")) ||
 	(type == QString("Existing SimCenter Events")) ||
 	(type == QString("ExistingSimCenterEvents"))) {
+
+        currentEventType="SimCenterEvent";
         index = 4;
     } else if ((type == QString("Existing PEER Records")) ||
                (type == QString("ExistingPEER_Events"))  ||
                (type == QString("ExistingPEER_Records"))) {
-        if(!subtype.isEmpty() && subtype == "PEER NGA Records")
+      if(!subtype.isEmpty() && subtype == "PEER NGA Records") {
             index = 1;
-        else
+	    currentEventType="PEER_NGA";		    
+      }  else {
             index = 3;
+	    currentEventType="PEER";	
+      } 
+
   //  } else if (type == QString("Hazard Based Event")) {
   //      index = 3;
     } else if (type == QString("Site Response") ||
                type == QString("SiteResponse")) {
         index = 2;
+        currentEventType="SiteResponse";		
     } else if (type == QString("Stochastic Ground Motion Model") ||
 	       type == QString("Stochastic Ground Motion") ||
 	       type == QString("StochasticGroundMotion") ||
                type == QString("StochasticMotion")) {
         index = 0;
+        currentEventType="StochasticGroundMotion";			
    // } else if ((type == QString("User Application")) ||
    //            (type == QString("UserDefinedApplication"))) {
    //     index = 6;
@@ -356,8 +386,20 @@ bool
 EarthquakeEventSelection::copyFiles(QString &destDir) {
 
     if (theCurrentEvent != 0) {
-        return  theCurrentEvent->copyFiles(destDir);
+          QString textForAnalytics = QString("Event-") + currentEventType;
+	  GoogleAnalytics::ReportAppUsage(textForAnalytics);    
+	  return theCurrentEvent->copyFiles(destDir);
     }
 
     return false;
+}
+
+void
+EarthquakeEventSelection::replyEventType(void) {
+    if (eventSelection->currentIndex() != 2 && eventSelection->currentIndex() != 5) {
+        emit typeEVT("EQ");
+    } else {
+        // the Site Response and User-Defined Database are excluded
+        emit typeEVT("None");
+    }
 }

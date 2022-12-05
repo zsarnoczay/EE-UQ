@@ -22,6 +22,8 @@
 class QComboBox;
 class QLabel;
 class QGroupBox;
+class SpectrumFromRegionalSurrogate;
+class UserSpectrumWidget;
 
 struct PeerScaledRecord
 {
@@ -64,6 +66,7 @@ public slots:
 
     void onScalingComboBoxChanged(const int index);
     void chooseOutputDirectory(void);
+    void switchUserDefined(QString dirName, QString fileName);
 
 private:
     PeerNgaWest2Client peerClient;
@@ -76,6 +79,9 @@ private:
     QComboBox* spectrumTypeComboBox;
     QStackedWidget* targetSpectrumDetails;
     QGridLayout* recordSelectionLayout;
+    QComboBox* suiteAverageBox; // how to compute the suite average
+    QComboBox* faultTypeBox; // fault type in PEER record searching
+    QComboBox* pulseBox; // whether filtering records by pulse-like feature
 
     //Magnitude Range
     QCheckBox* magnitudeCheckBox;
@@ -92,6 +98,11 @@ private:
     QLineEdit* vs30Min;
     QLineEdit* vs30Max;
     QTemporaryDir groundMotionsFolder;
+
+    //D5-95 Range
+    QCheckBox* durationCheckBox;
+    QLineEdit* durationMin;
+    QLineEdit* durationMax;
 
     //Scaling
     QComboBox* scalingComboBox;
@@ -133,6 +144,9 @@ private:
     void updateStatus(QString status);
     void selectRecords();
     void addTableItem(int row, int Column, QString value);
+
+    SpectrumFromRegionalSurrogate *spectrumSurrogate;
+    UserSpectrumWidget *userSpectrumTarget;
 
 };
 

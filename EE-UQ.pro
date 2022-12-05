@@ -4,9 +4,14 @@
 #
 #-------------------------------------------------
 
-QT += core gui charts concurrent network sql qml webenginewidgets uitools webengine webchannel 3dcore 3drender 3dextras
+QT += core gui charts concurrent uitools webenginewidgets network sql qml 3dcore 3drender 3dextras printsupport quick
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+
+
+CONFIG += c++17
+
 
 MOC_DIR = $$OUT_PWD/.moc
 UI_DIR = $$OUT_PWD/.ui
@@ -16,7 +21,7 @@ RCC_DIR = $$OUT_PWD/.rcc
 TARGET = EE_UQ
 TEMPLATE = app
 
-VERSION=2.2.3
+VERSION=2.2.5
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 DEFINES += NOINTERNALFEM
 
