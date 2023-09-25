@@ -57,7 +57,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <QDebug>
 #include <QFileDialog>
 #include <QPushButton>
-#include <sectiontitle.h>
+#include <SectionTitle.h>
 //#include <InputWidgetEDP.h>
 
 #include <InputWidgetExistingEvent.h>
@@ -80,7 +80,6 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     //
 
     QHBoxLayout *theSelectionLayout = new QHBoxLayout();
-    //    QLabel *label = new QLabel();
     SectionTitle *label=new SectionTitle();
     label->setMinimumWidth(250);
     label->setText(QString("Load Generator"));
@@ -94,17 +93,20 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     eventSelection->addItem(tr("Multiple PEER"));
     eventSelection->addItem(tr("Multiple SimCenter"));
     eventSelection->addItem(tr("User Specified Database"));
-    //    eventSelection->addItem(tr("Hazard Based Event"));
+    // eventSelection->addItem(tr("Hazard Based Event"));
     // eventSelection->addItem(tr("User Application"));
     eventSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     eventSelection->setItemData(1, "A Seismic event using Seismic Hazard Analysis and Record Selection/Scaling", Qt::ToolTipRole);
 
+    eventSelection->setMinimumWidth(250);
+    eventSelection->setMaximumHeight(25);
+
     theSelectionLayout->addWidget(label);
-    QSpacerItem *spacer = new QSpacerItem(50,10);
-    theSelectionLayout->addItem(spacer);
+    //QSpacerItem *spacer = new QSpacerItem(50,1);
+    //theSelectionLayout->addItem(spacer);
     theSelectionLayout->addWidget(eventSelection);
     theSelectionLayout->addStretch();
-    layout->addLayout(theSelectionLayout,0,1,1,1);
+    layout->addLayout(theSelectionLayout,0,1);
 
     //
     // create the stacked widget
@@ -162,7 +164,7 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
 
     //layout->addWidget(theStackedWidget);
     //layout->addWidget(sa);
-    layout->setMargin(0);
+    //layout->setMargin(0);
 
     // add Intensity Widget
     //theSCIMWidget = new SimCenterIntensityMeasureWidget();
@@ -184,6 +186,11 @@ EarthquakeEventSelection::EarthquakeEventSelection(RandomVariablesContainer *the
     //
 
     connect(eventSelection, SIGNAL(currentIndexChanged(QString)), this, SLOT(eventSelectionChanged(QString)));
+
+    global_layout->setSpacing(0);
+    layout->setSpacing(0);
+    global_layout->setContentsMargins(0,0,0,0);
+    layout->setContentsMargins(0,0,0,0);
 
 }
 
@@ -386,7 +393,7 @@ bool
 EarthquakeEventSelection::copyFiles(QString &destDir) {
 
     if (theCurrentEvent != 0) {
-          QString textForAnalytics = QString("Event-") + currentEventType;
+          QString textForAnalytics = QString("Event_") + currentEventType;
 	  GoogleAnalytics::ReportAppUsage(textForAnalytics);    
 	  return theCurrentEvent->copyFiles(destDir);
     }
