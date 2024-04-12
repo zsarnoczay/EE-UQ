@@ -421,3 +421,13 @@ EarthquakeEventSelection::replyEventType(void) {
         emit typeEVT("None");
     }
 }
+
+bool
+EarthquakeEventSelection::outputCitation(QJsonObject &jsonObject) {
+  QJsonObject appSpecificCitation;
+  theCurrentEvent->outputCitation(appSpecificCitation);
+  if (!appSpecificCitation.isEmpty()) {
+    jsonObject.insert(currentEventType, appSpecificCitation);
+  }
+  return true;
+}
